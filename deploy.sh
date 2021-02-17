@@ -18,9 +18,10 @@ kubectl create -f ./kubernetes/postgres/postgres-deployment.yaml
 kubectl create -f ./kubernetes/postgres/postgres-service.yaml
 
 
-echo "Creating twilio credentials..."
+echo "Creating twilio and jwt credentials..."
 
 kubectl apply -f ./kubernetes/auth/twilio-secret.yaml
+kubectl apply -f ./kubernetes/auth/jwt-secret.yaml
 
 echo "Creating the flask deployment and service..."
 
