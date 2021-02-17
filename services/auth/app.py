@@ -20,12 +20,9 @@ jwt = JWTManager(app)
 db.init_app(app)
 ma.init_app(app)
 
-"""
 @app.before_first_request
 def create_tables():
-    db.drop_all()
     db.create_all()
-"""
 
 @app.errorhandler(ValidationError)
 def handle_marshmallow_validation(err):

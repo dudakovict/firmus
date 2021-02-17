@@ -47,7 +47,7 @@ spec:
         - name: JWT_SECRET_KEY
           valueFrom:
             secretKeyRef:
-              name: jwt_secret
+              name: jwt-secret
               key: jwt_secret_key
         image: dudakovict/auth
         imagePullPolicy: Always
