@@ -1,0 +1,74 @@
+[
+    {
+        "name": "Administrativni poslovni",
+        "description": "Administrativni poslovi"
+    },
+    {
+        "name": "Management i organizacija",
+        "description": "Management i organizacija"
+    },
+    {
+        "name": "IT i digitalni poslovi",
+        "description": "IT i digitalni poslovi"
+    },
+    {
+        "name": "Dizajn i umjetnost",
+        "description": "Dizajn i umjetnost"
+    },
+    {
+        "name": "Računovodstvo i financije",
+        "description": "Računovodstvo i financije"
+    },
+    {
+        "name": "Ugostiteljstvo",
+        "description": "Ugostiteljstvo"
+    },
+    {
+        "name": "Turizam",
+        "description": "Turizam"
+    },
+    {
+        "name": "Čišćenje",
+        "description": "Čišćenje"
+    },
+    {
+        "name": "Promocije i hostesiranje",
+        "description": "Promocije i hostesiranje"
+    },
+    {
+        "name": "Prodaja",
+        "description": "Prodaja"
+    },
+    {
+        "name": "Slaganje robe",
+        "description": "Slaganje robe"
+    },
+    {
+        "name": "Fizički poslovi",
+        "description": "Fizički poslovi"
+    },
+    {
+        "name": "Vozači",
+        "description": "Vozači"
+    },
+    {
+        "name": "Čuvari",
+        "description": "Čuvari"
+    },
+    {
+        "name": "Briga o ljepoti i sport",
+        "description": "Briga o ljepoti i sport"
+    },
+    {
+        "name": "Skrb o djeci/odraslima",
+        "description": "Skrb o djeci/odraslima"
+    },
+    {
+        "name": "Građevinski poslovi",
+        "description": "Građevinski poslovi"
+    },
+    {
+        "name": "Statiranje",
+        "description": "Statiranje"
+    }
+]
