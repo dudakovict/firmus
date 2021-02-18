@@ -31,4 +31,5 @@ kubectl create -f ./kubernetes/auth/auth-service.yaml
 
 echo "Adding the ingress..."
 
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.44.0/deploy/static/provider/do/deploy.yaml
 kubectl apply -f ./kubernetes/ingress/ingress-service.yaml
