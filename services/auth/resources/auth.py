@@ -32,8 +32,8 @@ VERIFY_INTERNAL_SERVER_ERROR = "An unexpected error has occured."
 class UserRegister(Resource):
     @classmethod
     def post(cls):
+        user = user_schema.load(request.get_json())
         try:
-            user = user_schema.load(request.get_json())
             user.password = UserModel.generate_hash(user.password)
             user.save_to_db()
             verification = user.send_verification_code()
