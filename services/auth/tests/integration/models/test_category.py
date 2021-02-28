@@ -1,0 +1,49 @@
+from models.category import CategoryModel
+from models.job import JobModel
+from tests.integration.integration_base_test import IntegrationBaseTest
+
+
+class CategoryTest(IntegrationBaseTest):
+    def test_crud(self):
+        with self.app_context():
+            category = CategoryModel("test")
+
+            self.assertIsNone(
+                CategoryModel.find_by_slug(category.slug),
+                f"Found a category with slug {category.slug} \
+            before persisting it to database.",
+            )
+
+            category.save_to_db()
+
+            self.assertIsNotNone(
+                CategoryModel.find_by_slug(category.slug),
+                f"Did not find a category with slug \
+            {category.slug} after persisting it to database.",
+            )
+
+            category.delete_from_db()
+
+            self.assertIsNone(
+                CategoryModel.find_by_slug(category.slug),
+                f"Found a category with slug {category.slug} \
+            after deleting it from database.",
+            )
+
+    def test_job_relationship(self):
+        with self.app_context():
+            category = CategoryModel("test")
+            job = JobModel("test", "test")
+
+            category.save_to_db()
+            job.save_to_db()
+
+            self.assertEqual(
+                category.jobs.count(), 1, f"Expected 1 but got {category.jobs.count()}."
+            )
+
+            self.assertEqual(
+                category.jobs.first().name,
+                job.name,
+                f"Expected {job.name}, but got {category.jobs.first().name}.",
+            )

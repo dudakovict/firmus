@@ -9,9 +9,7 @@ REFRESH_EXPIRES = timedelta(days=30)
 
 POSTGRES_USER = os.environ.get("POSTGRES_USER")
 POSTRGES_PASSWORD = os.environ.get("POSTGRES_PASSWORD")
-DATABASE_URL = (
-    f"postgres://{POSTGRES_USER}:{POSTRGES_PASSWORD}@postgres:5432/firmus"
-)
+DATABASE_URL = f"postgres://{POSTGRES_USER}:{POSTRGES_PASSWORD}@localhost:5432/firmus"
 
 
 class Config:

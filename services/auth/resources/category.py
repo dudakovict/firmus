@@ -2,31 +2,41 @@ from flask import request
 from flask_restful import Resource
 from models.category import CategoryModel
 from schemas.category import CategorySchema
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm.exc import NoResultFound
+from errors import (
+    CategoryAlreadyExistsError,
+    CategoryNotExistsError,
+    CategoryNotNullError,
+    InternalServerError,
+)
 
 category_schema = CategorySchema()
 category_list_schema = CategorySchema(many=True)
-
-CATEGORY_NOT_FOUND = "Category '{}' not found."
-CATEGORY_DELETED = "Category '{}' deleted."
-CATEGORY_ALREADY_EXISTS = "Category '{}' already exists."
-CATEGORY_ERROR_INSERTING = "An unexpected error has occured while inserting category."
 
 
 class Category(Resource):
     @classmethod
     def get(cls, slug: str):
         category = CategoryModel.find_by_slug(slug)
-        if category:
-            return category_schema.dump(category), 200
-        return {"message": CATEGORY_NOT_FOUND.format(slug)}, 404
+        if category is None:
+            raise CategoryNotExistsError
+        return category_schema.dump(category), 200
 
     @classmethod
     def delete(cls, slug: str):
         category = CategoryModel.find_by_slug(slug)
-        if category:
+        try:
+            if category is None:
+                raise NoResultFound
             category.delete_from_db()
-            return {"message": CATEGORY_DELETED.format(slug)}, 200
-        return {"message": CATEGORY_NOT_FOUND.format(slug)}, 404
+        except NoResultFound:
+            raise CategoryNotExistsError
+        except IntegrityError:
+            raise CategoryNotNullError
+        except:
+            raise InternalServerError
+        return None, 204
 
 
 class CategoryList(Resource):
@@ -37,10 +47,10 @@ class CategoryList(Resource):
     @classmethod
     def post(cls):
         category = category_schema.load(request.get_json())
-        if CategoryModel.find_by_slug(category.slug):
-            return {"message": CATEGORY_ALREADY_EXISTS.format(category.slug)}, 400
         try:
             category.save_to_db()
+        except IntegrityError:
+            raise CategoryAlreadyExistsError
         except:
-            return {"message": CATEGORY_ERROR_INSERTING}, 500
+            raise InternalServerError
         return category_schema.dump(category), 201

@@ -8,17 +8,15 @@ class JobModel(db.Model):
 
     slug = db.Column(db.String(20), primary_key=True)
     name = db.Column(db.String(80), nullable=False, unique=True)
-    description = db.Column(db.String(160), nullable=False)
     category_slug = db.Column(
         db.String(20), db.ForeignKey("categories.slug"), nullable=False
     )
     category = db.relationship("CategoryModel")
 
-    def __init__(self, name: str, description: str, category_slug: str, **kwargs):
+    def __init__(self, name: str, category_slug: str, **kwargs):
         super().__init__(**kwargs)
         self.slug = slugify(name, max_length=20)
         self.name = name
-        self.description = description
         self.category_slug = category_slug
 
     def save_to_db(self) -> None:

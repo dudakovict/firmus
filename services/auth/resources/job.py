@@ -2,31 +2,35 @@ from flask import request
 from flask_restful import Resource
 from models.job import JobModel
 from schemas.job import JobSchema
+from models.category import CategoryModel
+from psycopg2.errors import ForeignKeyViolation
+from sqlalchemy.exc import IntegrityError
+from errors import (
+    JobAlreadyExistsError,
+    JobNotExistsError,
+    JobForeignKeyError,
+    InternalServerError,
+)
 
 job_schema = JobSchema()
 job_list_schema = JobSchema(many=True)
-
-JOB_NOT_FOUND = "Job '{}' not found."
-JOB_DELETED = "Job '{}' deleted."
-JOB_ALREADY_EXISTS = "Job '{}' already exists."
-JOB_ERROR_INSERTING = "An unexpected error has occured while inserting job."
 
 
 class Job(Resource):
     @classmethod
     def get(cls, slug: str):
         job = JobModel.find_by_slug(slug)
-        if job:
-            return job_schema.dump(job), 200
-        return {"message": JOB_NOT_FOUND.format(slug)}, 404
+        if job is None:
+            raise JobNotExistsError
+        return job_schema.dump(job), 200
 
     @classmethod
     def delete(cls, slug: str):
         job = JobModel.find_by_slug(slug)
-        if job:
-            job.delete_from_db()
-            return {"message": JOB_DELETED.format(slug)}, 200
-        return {"message": JOB_NOT_FOUND.format(slug)}, 404
+        if job is None:
+            raise JobNotExistsError
+        job.delete_from_db()
+        return None, 204
 
 
 class JobList(Resource):
@@ -37,10 +41,14 @@ class JobList(Resource):
     @classmethod
     def post(cls):
         job = job_schema.load(request.get_json())
-        if JobModel.find_by_slug(job.slug):
-            return {"message": JOB_ALREADY_EXISTS.format(job.slug)}, 400
         try:
+            if CategoryModel.find_by_slug(job.category_slug) is None:
+                raise ForeignKeyViolation
             job.save_to_db()
+        except ForeignKeyViolation:
+            raise JobForeignKeyError
+        except IntegrityError:
+            raise JobAlreadyExistsError
         except:
-            return {"message": JOB_ERROR_INSERTING}, 500
+            raise InternalServerError
         return job_schema.dump(job), 201

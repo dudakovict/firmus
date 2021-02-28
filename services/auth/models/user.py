@@ -1,32 +1,30 @@
 from db import db
-from sqlalchemy.dialects.postgresql import ARRAY, JSON
-from passlib.hash import pbkdf2_sha256 as sha256
+from flask_bcrypt import generate_password_hash, check_password_hash
+from sqlalchemy.dialects.postgresql import UUID, ARRAY, JSON
 from uuid import uuid4
 from datetime import date
 from enum import Enum
 from libs.twilio import Twilio
-from typing import Dict, List
+from typing import List, Dict
 from models.job import JobModel
 
 user_jobs = db.Table(
     "user_jobs",
-    db.Column("job_slug", db.String(20), db.ForeignKey(
-        "jobs.slug"), primary_key=True),
-    db.Column("user_id", db.String(50), db.ForeignKey(
-        "users.id"), primary_key=True),
+    db.Column("job_slug", db.String(20), db.ForeignKey("jobs.slug"), primary_key=True),
+    db.Column("user_id", UUID, db.ForeignKey("users.id"), primary_key=True),
 )
 
 
-class Gender(Enum):
-    male = 0
-    female = 1
-    other = 2
+class Gender(str, Enum):
+    male = "male"
+    female = "female"
+    other = "other"
 
 
 class UserModel(db.Model):
     __tablename__ = "users"
 
-    id = db.Column(db.String(50), primary_key=True)
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=lambda: uuid4().hex)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(
         db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now()
@@ -47,33 +45,8 @@ class UserModel(db.Model):
         cascade="all, delete",
         secondary=user_jobs,
         lazy="subquery",
-        backref=db.backref(
-            "users", cascade="all, delete", lazy="dynamic"),
+        backref=db.backref("users", cascade="all, delete", lazy="dynamic"),
     )
-
-    def __init__(
-        self,
-        first_name: str,
-        last_name: str,
-        phone_number: str,
-        city: str,
-        birth_date: date,
-        gender: Gender,
-        email: str,
-        password: str,
-        **kwargs
-    ):
-        super().__init__(**kwargs)
-        self.id = uuid4().hex
-        self.first_name = first_name
-        self.last_name = last_name
-        self.phone_number = phone_number
-        self.city = city
-        self.birth_date = birth_date
-        self.gender = gender
-        self.email = email
-        self.password = password
-        self.verified = False
 
     def save_to_db(self) -> None:
         db.session.add(self)
@@ -83,10 +56,10 @@ class UserModel(db.Model):
         db.session.delete(self)
         db.session.commit()
 
-    def send_verification_code(self) -> Dict:
-        return Twilio.start_verification(self.phone_number)
+    def send_verification_code(self) -> None:
+        Twilio.start_verification(self.phone_number)
 
-    def check_verification_code(self, code: str) -> Dict:
+    def check_verification_code(self, code: str) -> bool:
         return Twilio.check_verification(self.phone_number, code)
 
     @classmethod
@@ -103,11 +76,11 @@ class UserModel(db.Model):
 
     @staticmethod
     def generate_hash(password: str) -> str:
-        return sha256.hash(password)
+        return generate_password_hash(password).decode('utf8')
 
     @staticmethod
-    def verify_hash(password: str, _hash: str) -> bool:
-        return sha256.verify(password, _hash)
+    def verify_hash(pw_hash: str, password: str) -> bool:
+        return check_password_hash(pw_hash, password)
 
 
 class RevokedTokenModel(db.Model):

@@ -6,86 +6,137 @@ from flask_jwt_extended import (
     jwt_required,
     jwt_refresh_token_required,
     get_jwt_identity,
-    get_raw_jwt
+    get_raw_jwt,
 )
 
 from db import db
 from models.user import UserModel, RevokedTokenModel
-from schemas.user import UserSchema, UserVerificationSchema
+from schemas.user import (
+    UserRegisterSchema,
+    UserCheckVerificationSchema,
+    UserResendVerificationSchema,
+    UserLoginSchema,
+)
+from sqlalchemy.exc import IntegrityError, InvalidRequestError
+from sqlalchemy.orm.exc import NoResultFound
 from twilio.base.exceptions import TwilioRestException
 from psycopg2.errors import UniqueViolation
+from marshmallow import ValidationError
 
-user_schema = UserSchema()
-user_verification_schema = UserVerificationSchema() 
+from errors import (
+    UserEmailAlreadyExistsError,
+    UserPhoneAlreadyExistsError,
+    UserPhoneNotExistsError,
+    UserEmailNotExistsError,
+    UserNotVerifiedError,
+    UserAlreadyVerifiedError,
+    InvalidPhoneNumberError,
+    InvalidVerificationCodeError,
+    InvalidCredentialsError,
+    InternalServerError,
+)
 
-AUTH_USER_CREATED = "User '{}' created."
-AUTH_INTERNAL_SERVER_ERROR = "An unexpected error has occured."
-
-VERIFY_USER_NOT_FOUND = "User with phone number '{}' doesn't exist."
-VERIFY_USER_ALREADY_VERIFIED = "User with phone number '{}' has already been verified."
-VERIFY_USER_VERIFIED = "User with phone number '{}' successfully verified."
-VERIFY_USER_CODE_INCORRECT = "Incorrect verification code."
-VERIFY_USER_CODE_RESENT = "Resent code to '{}'."
-VERIFY_INTERNAL_SERVER_ERROR = "An unexpected error has occured."
+user_register_schema = UserRegisterSchema()
+user_login_schema = UserLoginSchema()
+user_check_verification_schema = UserCheckVerificationSchema()
+user_resend_verification_schema = UserResendVerificationSchema()
 
 
 class UserRegister(Resource):
     @classmethod
     def post(cls):
-        user = user_schema.load(request.get_json())
         try:
+            user = user_register_schema.load(request.get_json())
             user.password = UserModel.generate_hash(user.password)
+            user.send_verification_code()
             user.save_to_db()
-            verification = user.send_verification_code()
-            return {
-                "message": AUTH_USER_CREATED.format(user.email),
-                "verification": verification,
-            }, 200
-        except UniqueViolation as exception:
-            return {"message": exception}, 500
-        except TwilioRestException as exception:
-            user.delete_from_db()
-            return {"message": exception.msg}, 500
+
+            return user_register_schema.dump(user), 201
+        except ValidationError:
+            raise
+        except (UserEmailAlreadyExistsError, UserPhoneAlreadyExistsError):
+            raise
+        except TwilioRestException:
+            raise InvalidPhoneNumberError
         except:
-            user.delete_from_db()
-            return {"message": AUTH_INTERNAL_SERVER_ERROR}
+            raise InternalServerError
+
 
 class UserCheckVerification(Resource):
     @classmethod
     def post(cls):
-        data = user_verification_schema.load(request.get_json())
-        phone_number = data.get("phone_number")
-        user = UserModel.find_by_phone(phone_number)
-        if not user:
-            return {"message": VERIFY_USER_NOT_FOUND.format(phone_number)}, 404
-        if user.verified:
-            return {"message": VERIFY_USER_ALREADY_VERIFIED.format(phone_number)}, 400
+        data = user_check_verification_schema.load(request.get_json())
+        user = UserModel.find_by_phone(data.get("phone_number"))
+
         try:
-            verification_check = user.check_verification_code(data.get("code"))
-            if verification_check.get("status") == "approved":
+            if user is None:
+                raise NoResultFound
+            if user.verified:
+                raise InvalidRequestError
+            if user.check_verification_code(data.get("code")):
                 user.verified = True
                 user.save_to_db()
-                return {"message": VERIFY_USER_VERIFIED.format(phone_number)}, 200
-            return {"message": VERIFY_USER_CODE_INCORRECT}, 400
-        except TwilioRestException as exception:
-            return {"message": exception.msg}, 500
+                return user_check_verification_schema.dump(data)
+            raise InvalidVerificationCodeError
+        except NoResultFound:
+            raise UserPhoneNotExistsError
+        except InvalidRequestError:
+            raise UserAlreadyVerifiedError
+        except TwilioRestException:
+            raise
+        except InvalidVerificationCodeError:
+            raise
         except:
-            return {"message": VERIFY_INTERNAL_SERVER_ERROR}, 500
+            raise InternalServerError
+
 
 class UserResendVerification(Resource):
     @classmethod
     def post(cls):
-        data = user_verification_schema.load(request.get_json(), partial=("code",))
-        phone_number = data.get("phone_number")
-        user = UserModel.find_by_phone(phone_number)
-        if not user:
-            return {"message": VERIFY_USER_NOT_FOUND.format(phone_number)}, 404
-        if user.verified:
-            return {"message": VERIFY_USER_ALREADY_VERIFIED.format(phone_number)}, 400
+        data = user_resend_verification_schema.load(request.get_json())
+        user = UserModel.find_by_phone(data.get("phone_number"))
+
         try:
+            if user is None:
+                raise NoResultFound
+            if user.verified:
+                raise InvalidRequestError
             user.send_verification_code()
-            return {"message": VERIFY_USER_CODE_RESENT.format(user.phone_number)}, 200
-        except TwilioRestException as exception:
-            return {"message": exception.msg}, 500
+            return user_resend_verification_schema.dump(data)
+        except NoResultFound:
+            raise UserPhoneNotExistsError
+        except InvalidRequestError:
+            raise UserAlreadyVerifiedError
+        except TwilioRestException:
+            raise
         except:
-            return {"message": VERIFY_INTERNAL_SERVER_ERROR}, 500
+            raise InternalServerError
+
+
+class UserLogin(Resource):
+    @classmethod
+    def post(cls):
+        user = user_login_schema.load(request.get_json())
+        current_user = UserModel.find_by_email(user.email)
+
+        try:
+            if current_user is None:
+                raise NoResultFound
+            if not current_user.verified:
+                raise UserNotVerifiedError
+            if not UserModel.verify_hash(current_user.password, user.password):
+                raise InvalidCredentialsError
+            access_token = create_access_token(identity=current_user.id, fresh=True)
+            refresh_token = create_refresh_token(identity=current_user.id)
+            tokens = dict(
+                [("access_token", access_token), ("refresh_token", refresh_token)]
+            )
+            return {"user": user_login_schema.dump(current_user), "tokens": tokens}, 200
+        except NoResultFound:
+            raise UserEmailNotExistsError
+        except UserNotVerifiedError:
+            raise
+        except InvalidCredentialsError:
+            raise
+        except:
+            raise InternalServerError
