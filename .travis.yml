@@ -1,0 +1,10 @@
+language: python
+python:
+ - "3.9"
+ - "nightly"
+install:
+ - cd services/auth/
+ - "pip install pipenv"
+ - "pipenv install pytest"
+ - "pipenv install"
+script: python -m pytest tests/
