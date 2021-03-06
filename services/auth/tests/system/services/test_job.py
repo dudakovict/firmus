@@ -19,13 +19,13 @@ class JobTest(SystemBaseTest):
         with self.app() as client:
             with self.app_context():
                 client.post(
-                    "/categories",
+                    "/auth/categories",
                     data=json.dumps({"name": "test"}),
                     headers={"Content-Type": "application/json"},
                 )
 
                 resp = client.post(
-                    "/jobs",
+                    "/auth/jobs",
                     data=json.dumps({"name": "test", "category_slug": "test"}),
                     headers={"Content-Type": "application/json"},
                 )
@@ -49,19 +49,19 @@ class JobTest(SystemBaseTest):
         with self.app() as client:
             with self.app_context():
                 client.post(
-                    "/categories",
+                    "/auth/categories",
                     data=json.dumps({"name": "test"}),
                     headers={"Content-Type": "application/json"},
                 )
 
                 client.post(
-                    "/jobs",
+                    "/auth/jobs",
                     data=json.dumps({"name": "test", "category_slug": "test"}),
                     headers={"Content-Type": "application/json"},
                 )
 
                 resp = client.post(
-                    "/jobs",
+                    "/auth/jobs",
                     data=json.dumps({"name": "test", "category_slug": "test"}),
                     headers={"Content-Type": "application/json"},
                 )
@@ -79,15 +79,24 @@ class JobTest(SystemBaseTest):
     def test_delete_job(self):
         with self.app() as client:
             with self.app_context():
-                CategoryModel("test").save_to_db()
-                JobModel("test", "test").save_to_db()
+                client.post(
+                    "/auth/categories",
+                    data=json.dumps({"name": "test"}),
+                    headers={"Content-Type": "application/json"},
+                )
+
+                client.post(
+                    "/auth/jobs",
+                    data=json.dumps({"name": "test", "category_slug": "test"}),
+                    headers={"Content-Type": "application/json"},
+                )
 
                 self.assertIsNotNone(
                     JobModel.find_by_slug("test"),
                     f"Did not find a job with slug {self.expected_job.get('slug')} after persisting it to database.",
                 )
 
-                resp = client.delete("/jobs/test")
+                resp = client.delete("/auth/jobs/test")
 
                 self.assertEqual(
                     resp.status_code, 204, f"Expected 204, but got {resp.status_code}."
@@ -105,10 +114,19 @@ class JobTest(SystemBaseTest):
     def test_find_job(self):
         with self.app() as client:
             with self.app_context():
-                CategoryModel("test").save_to_db()
-                JobModel("test", "test").save_to_db()
+                client.post(
+                    "/auth/categories",
+                    data=json.dumps({"name": "test"}),
+                    headers={"Content-Type": "application/json"},
+                )
 
-                resp = client.get("/jobs/test")
+                client.post(
+                    "/auth/jobs",
+                    data=json.dumps({"name": "test", "category_slug": "test"}),
+                    headers={"Content-Type": "application/json"},
+                )
+
+                resp = client.get("/auth/jobs/test")
 
                 self.assertEqual(
                     resp.status_code, 200, f"Expected 200, but got {resp.status_code}."
@@ -123,7 +141,7 @@ class JobTest(SystemBaseTest):
     def test_job_not_found(self):
         with self.app() as client:
             with self.app_context():
-                resp = client.get("/jobs/test")
+                resp = client.get("/auth/jobs/test")
 
                 self.assertEqual(
                     resp.status_code, 404, f"Expected 404, but got {resp.status_code}."
@@ -138,10 +156,19 @@ class JobTest(SystemBaseTest):
     def test_list_job(self):
         with self.app() as client:
             with self.app_context():
-                CategoryModel("test").save_to_db()
-                JobModel("test", "test").save_to_db()
+                client.post(
+                    "/auth/categories",
+                    data=json.dumps({"name": "test"}),
+                    headers={"Content-Type": "application/json"},
+                )
 
-                resp = client.get("/jobs")
+                client.post(
+                    "/auth/jobs",
+                    data=json.dumps({"name": "test", "category_slug": "test"}),
+                    headers={"Content-Type": "application/json"},
+                )
+
+                resp = client.get("/auth/jobs")
 
                 self.assertEqual(
                     resp.status_code, 200, f"Expected 200, but got {resp.status_code}."

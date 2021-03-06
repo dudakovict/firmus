@@ -1,9 +1,16 @@
-from db import db
-from ma import ma
+from schemas import ma
+from models import db, UserModel, JobModel
 from marshmallow import Schema, fields, pre_load, post_dump
-from models.user import UserModel
-from schemas.job import UserJobSchema
 from errors import UserEmailAlreadyExistsError, UserPhoneAlreadyExistsError
+
+
+class UserJobSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = JobModel
+        load_only = ("category",)
+        include_fk = True
+        load_instance = True
+        sqla_session = db.session
 
 
 class UserRegisterSchema(ma.SQLAlchemyAutoSchema):
@@ -19,11 +26,9 @@ class UserRegisterSchema(ma.SQLAlchemyAutoSchema):
 
     @pre_load
     def check_email_and_phone_number(self, data, **kwargs):
-        email = data.get("email")
-        phone_number = data.get("phone_number")
-        if UserModel.find_by_email(email):
+        if UserModel.find_by_email(data.get("email")):
             raise UserEmailAlreadyExistsError
-        if UserModel.find_by_phone(phone_number):
+        if UserModel.find_by_phone(data.get("phone_number")):
             raise UserPhoneAlreadyExistsError
         return data
 

@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from flask_bcrypt import Bcrypt
 from sqlalchemy import MetaData
 
 convention = {
@@ -12,3 +13,8 @@ convention = {
 metadata = MetaData(naming_convention=convention)
 
 db = SQLAlchemy(metadata=metadata)
+bcrypt = Bcrypt()
+
+from .user import *
+from .job import JobModel
+from .category import CategoryModel

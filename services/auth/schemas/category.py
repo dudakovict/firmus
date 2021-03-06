@@ -1,8 +1,7 @@
-from ma import ma
-from db import db
-from models.category import CategoryModel
-from models.job import JobModel
-from schemas.job import JobSchema
+from schemas import ma, JobSchema
+from models import db, CategoryModel, JobModel
+from marshmallow import post_load
+from slugify import slugify
 
 
 class CategorySchema(ma.SQLAlchemyAutoSchema):
@@ -14,3 +13,8 @@ class CategorySchema(ma.SQLAlchemyAutoSchema):
         include_fk = True
         load_instance = True
         sqla_session = db.session
+
+    @post_load
+    def slugify_name(self, category, **kwargs):
+        category.slug = slugify(category.name, max_length=20)
+        return category

@@ -1,28 +1,21 @@
-from models.user import UserModel, user_jobs
-from models.category import CategoryModel
-from models.job import JobModel
 from tests.integration.integration_base_test import IntegrationBaseTest
-from uuid import uuid4
-from models.user import Gender
-from datetime import date
+from models import UserModel
 
 
 class UserTest(IntegrationBaseTest):
     def setUp(self):
         super(UserTest, self).setUp()
-        self.user = UserModel()
-        self.user.id = uuid4().hex
-        self.user.first_name = "test"
-        self.user.last_name = "test"
-        self.user.phone_number = "+3859999999"
-        self.user.city = "test"
-        self.user.birth_date = date(2021, 2, 20)
-        self.user.gender = Gender("male")
-        self.user.email = "test@gmail.com"
-        self.user.password = "test"
-        self.user.verified = False
-        self.user.languages = ["HR", "EN"]
-        self.user.availability = {
+        self.user_data = {
+            "first_name": "test",
+            "last_name": "test",
+            "phone_number": "+3859999999",
+            "city": "test",
+            "birth_date": "2021-02-20",
+            "gender": "male",
+            "email": "test@gmail.com",
+            "password": "test",
+            "languages": ["HR", "EN"],
+            "availability": {
             "mon": True,
             "tue": False,
             "wed": True,
@@ -30,42 +23,62 @@ class UserTest(IntegrationBaseTest):
             "fri": True,
             "sat": False,
             "sun": True,
+            },
+            "jobs": []
+        }
+
+        self.category_data = {
+            "name": "test"
+        }
+
+        self.job_data = {
+            "name": "test",
+            "category_slug": "test"
         }
 
     def test_crud(self):
         with self.app_context():
+            user = self.user_schema.load(self.user_data)
             self.assertIsNone(
-                UserModel.find_by_email(self.user.email),
-                f"Found a user with email {self.user.email} before persisting it to databse.",
+                UserModel.find_by_email(user.email),
+                f"Found a user with email {user.email} before persisting it to databse.",
             )
 
-            self.user.save_to_db()
+            user.save_to_db()
 
             self.assertIsNotNone(
-                UserModel.find_by_email(self.user.email),
-                f"Did not find a user with email {self.user.email} after persisting it to database.",
+                UserModel.find_by_email(user.email),
+                f"Did not find a user with email {user.email} after persisting it to database.",
             )
 
-            self.user.delete_from_db()
+            user.delete_from_db()
 
             self.assertIsNone(
-                UserModel.find_by_email(self.user.email),
-                f"Found a user with email {self.user.email} after deleting it from databse.",
+                UserModel.find_by_email(user.email),
+                f"Found a user with email {user.email} after deleting it from databse.",
             )
 
     def test_user_job_relationship(self):
         with self.app_context():
-            CategoryModel("test").save_to_db()
-            job = JobModel("test", "test")
+            self.category_schema.load(self.category_data).save_to_db()
+        
+            job = self.job_schema.load(self.job_data)
 
             job.save_to_db()
 
-            self.user.jobs.append(job)
-            self.user.save_to_db()
+            user = self.user_schema.load(self.user_data)
+
+            user.jobs.append(job)
+            user.save_to_db()
 
             self.assertEqual(
-                len(self.user.jobs), 1, f"Expected 1 but got {len(self.user.jobs)}."
+                user.jobs.all()[0].name, job.name, f"Expected {job.name} but got {user.jobs.all()[0].name}."
             )
+
+            self.assertEqual(
+                user.jobs.count(), 1, f"Expected 1 but got {user.jobs.count()}."
+            )
+
             self.assertEqual(
                 job.users.count(), 1, f"Expected 1 but got {job.users.count()}."
             )

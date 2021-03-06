@@ -1,8 +1,7 @@
 from flask import request
 from flask_restful import Resource
-from models.job import JobModel
-from schemas.job import JobSchema
-from models.category import CategoryModel
+from models import JobModel, CategoryModel
+from schemas import JobSchema
 from psycopg2.errors import ForeignKeyViolation
 from sqlalchemy.exc import IntegrityError
 from errors import (
