@@ -42,4 +42,4 @@ class ProductionConfig(BaseConfig):
 class TestConfig(BaseConfig):
     FLASK_ENV = 'development'
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_TEST_URL")
+    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_TEST_URL")
