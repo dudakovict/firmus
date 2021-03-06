@@ -1,14 +1,12 @@
 from unittest import TestCase
-from app import app
-from db import db
+from run import app
+from models import db
+from schemas import CategorySchema, JobSchema, UserRegisterSchema
 
 
 class IntegrationBaseTest(TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        app.config[
-            "SQLALCHEMY_DATABASE_URI"
-        ] = "postgresql://postgres:firmuspostgres@localhost:5432/firmus_test"
         with app.app_context():
             db.init_app(app)
 
@@ -17,6 +15,9 @@ class IntegrationBaseTest(TestCase):
             db.create_all()
         self.app = app.test_client
         self.app_context = app.app_context
+        self.category_schema = CategorySchema()
+        self.job_schema = JobSchema()
+        self.user_schema = UserRegisterSchema()
 
     def tearDown(self):
         with app.app_context():

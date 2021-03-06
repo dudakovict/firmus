@@ -1,12 +1,21 @@
-from models.category import CategoryModel
-from models.job import JobModel
 from tests.integration.integration_base_test import IntegrationBaseTest
+from models import CategoryModel, JobModel
 
 
 class CategoryTest(IntegrationBaseTest):
+    def setUp(self):
+        super(CategoryTest, self).setUp()
+        self.category_data = {
+            "name": "test"
+        }
+        self.job_data = {
+            "name": "test",
+            "category_slug": "test"
+        }
+
     def test_crud(self):
         with self.app_context():
-            category = CategoryModel("test")
+            category = self.category_schema.load(self.category_data)
 
             self.assertIsNone(
                 CategoryModel.find_by_slug(category.slug),
@@ -32,8 +41,8 @@ class CategoryTest(IntegrationBaseTest):
 
     def test_job_relationship(self):
         with self.app_context():
-            category = CategoryModel("test")
-            job = JobModel("test", "test")
+            category = self.category_schema.load(self.category_data)
+            job = self.job_schema.load(self.job_data)
 
             category.save_to_db()
             job.save_to_db()

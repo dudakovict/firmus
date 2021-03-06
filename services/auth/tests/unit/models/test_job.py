@@ -1,11 +1,24 @@
 from tests.unit.unit_base_test import UnitTestCase
-from models.job import JobModel
+from schemas import JobSchema
 from slugify import slugify
 
 
 class JobTest(UnitTestCase):
+    def setUp(self):
+        super(JobTest, self).setUp()
+        self.job_schema = JobSchema()
+        self.data_name = {
+            "name": "test",
+            "category_slug": "test"
+        }
+        self.data_slug = {
+            "name": "testing job slug",
+            "category_slug": "test"
+        }
+
+
     def test_create_job(self):
-        job = JobModel("test", "test")
+        job = self.job_schema.load(self.data_name)
 
         self.assertEqual(
             job.name,
@@ -25,9 +38,8 @@ class JobTest(UnitTestCase):
         )
 
     def test_job_slug(self):
-        name = "testing job slug"
-        job = JobModel(name, "test")
-        job_slug = slugify(name, max_length=20)
+        job = self.job_schema.load(self.data_slug)
+        job_slug = slugify(self.data_slug.get("name"), max_length=20)
 
         self.assertEqual(
             job.slug,

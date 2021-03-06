@@ -1,24 +1,13 @@
 from tests.unit.unit_base_test import UnitTestCase
-from models.user import UserModel, Gender
+from models import UserModel, Gender
 from datetime import date
 from uuid import uuid4
 
 
 class UserTest(UnitTestCase):
     def setUp(self):
-        self.user = UserModel()
-        self.user.id = uuid4().hex
-        self.user.first_name = "test"
-        self.user.last_name = "test"
-        self.user.phone_number = "+3859999999"
-        self.user.city = "test"
-        self.user.birth_date = date(2021, 2, 20)
-        self.user.gender = Gender("male")
-        self.user.email = "test@gmail.com"
-        self.user.password = "test"
-        self.user.verified = False
-        self.user.languages = ["HR", "EN"]
-        self.user.availability = {
+        self.user = UserModel(id=uuid4().hex, first_name="test", last_name="test", phone_number="+3859999999", city="test", birth_date=date(2021, 2, 20), gender=Gender("male"),
+        email="test@gmail.com", password="test", verified=False, languages=["HR", "EN"], availability = {
             "mon": True,
             "tue": False,
             "wed": True,
@@ -26,7 +15,7 @@ class UserTest(UnitTestCase):
             "fri": True,
             "sat": False,
             "sun": True,
-        }
+        })
 
     def test_create_user(self):
         self.assertIsNotNone(
@@ -102,9 +91,9 @@ class UserTest(UnitTestCase):
             },
             f"Got {self.user.availability}, but expected something else.",
         )
-
+        
         self.assertListEqual(
-            self.user.jobs, [], f"Expected an empty list, but got {self.user.jobs}."
+            self.user.jobs.all(), [], f"Expected an empty list, but got {self.user.jobs}."
         )
 
     def test_user_password_hash(self):
@@ -123,6 +112,6 @@ class UserTest(UnitTestCase):
         )
 
         self.assertTrue(
-            UserModel.verify_hash("test", self.user.password),
+            UserModel.verify_hash(self.user.password, 'test'),
             f"Hash value of 'test' does not equal '{self.user.password}.",
         )

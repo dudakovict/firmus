@@ -1,11 +1,21 @@
 from tests.unit.unit_base_test import UnitTestCase
-from models.category import CategoryModel
+from schemas import CategorySchema
 from slugify import slugify
 
 
 class CategoryTest(UnitTestCase):
+    def setUp(self):
+        super(CategoryTest, self).setUp()
+        self.category_schema = CategorySchema()
+        self.data_name = {
+            "name": "test"
+        }
+        self.data_slug = {
+            "name": "testing category slug"
+        }
+
     def test_create_category(self):
-        category = CategoryModel("test")
+        category = self.category_schema.load(self.data_name)
 
         self.assertEqual(
             category.name,
@@ -21,9 +31,8 @@ class CategoryTest(UnitTestCase):
         )
 
     def test_category_slug(self):
-        name = "testing category slug"
-        category = CategoryModel(name)
-        category_slug = slugify(name, max_length=20)
+        category = self.category_schema.load(self.data_slug)
+        category_slug = slugify(self.data_slug.get("name"), max_length=20)
 
         self.assertEqual(
             category.slug,

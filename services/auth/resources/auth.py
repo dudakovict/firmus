@@ -4,19 +4,19 @@ from flask_jwt_extended import (
     create_access_token,
     create_refresh_token,
     jwt_required,
-    jwt_refresh_token_required,
     get_jwt_identity,
-    get_raw_jwt,
+    get_jwt,
 )
 
-from db import db
-from models.user import UserModel, RevokedTokenModel
-from schemas.user import (
+from models import UserModel, RevokedTokenModel
+
+from schemas import (
     UserRegisterSchema,
     UserCheckVerificationSchema,
     UserResendVerificationSchema,
     UserLoginSchema,
 )
+
 from sqlalchemy.exc import IntegrityError, InvalidRequestError
 from sqlalchemy.orm.exc import NoResultFound
 from twilio.base.exceptions import TwilioRestException
@@ -140,3 +140,37 @@ class UserLogin(Resource):
             raise
         except:
             raise InternalServerError
+
+class UserLogoutAccess(Resource):
+    @classmethod
+    @jwt_required()
+    def post(cls):
+        jti = get_jwt()['jti']
+        try:
+            revoked_token = RevokedTokenModel(jti=jti)
+            revoked_token.add()
+            return None, 200
+        except:
+            raise InternalServerError
+
+
+class UserLogoutRefresh(Resource):
+    @classmethod
+    @jwt_required(refresh=True)
+    def post(cls):
+        jti = get_jwt()['jti']
+        try:
+            revoked_token = RevokedTokenModel(jti=jti)
+            revoked_token.add()
+            return None, 200
+        except:
+            raise InternalServerError
+
+
+class TokenRefresh(Resource):
+    @classmethod
+    @jwt_required(refresh=True)
+    def post(cls):
+        current_user = get_jwt_identity()
+        access_token = create_access_token(identity=current_user)
+        return {'access_token': access_token}, 200

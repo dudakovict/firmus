@@ -1,17 +1,15 @@
-from db import db
-from flask_bcrypt import generate_password_hash, check_password_hash
+from models import bcrypt, db
 from sqlalchemy.dialects.postgresql import UUID, ARRAY, JSON
 from uuid import uuid4
 from datetime import date
 from enum import Enum
 from libs.twilio import Twilio
 from typing import List, Dict
-from models.job import JobModel
 
 user_jobs = db.Table(
     "user_jobs",
     db.Column("job_slug", db.String(20), db.ForeignKey("jobs.slug"), primary_key=True),
-    db.Column("user_id", UUID, db.ForeignKey("users.id"), primary_key=True),
+    db.Column("user_id", UUID(as_uuid=True), db.ForeignKey("users.id"), primary_key=True),
 )
 
 
@@ -40,13 +38,7 @@ class UserModel(db.Model):
     verified = db.Column(db.Boolean, nullable=False, default=False)
     languages = db.Column(ARRAY(db.String(2)), nullable=False)
     availability = db.Column(JSON, nullable=False)
-    jobs = db.relationship(
-        "JobModel",
-        cascade="all, delete",
-        secondary=user_jobs,
-        lazy="subquery",
-        backref=db.backref("users", cascade="all, delete", lazy="dynamic"),
-    )
+    jobs = db.relationship("JobModel", secondary=user_jobs, lazy="dynamic", back_populates="users")
 
     def save_to_db(self) -> None:
         db.session.add(self)
@@ -76,11 +68,11 @@ class UserModel(db.Model):
 
     @staticmethod
     def generate_hash(password: str) -> str:
-        return generate_password_hash(password).decode('utf8')
+        return bcrypt.generate_password_hash(password).decode('utf8')
 
     @staticmethod
     def verify_hash(pw_hash: str, password: str) -> bool:
-        return check_password_hash(pw_hash, password)
+        return bcrypt.check_password_hash(pw_hash, password)
 
 
 class RevokedTokenModel(db.Model):

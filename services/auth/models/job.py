@@ -1,7 +1,5 @@
-from db import db
-from slugify import slugify
+from models import db, user_jobs
 from typing import List
-
 
 class JobModel(db.Model):
     __tablename__ = "jobs"
@@ -12,12 +10,7 @@ class JobModel(db.Model):
         db.String(20), db.ForeignKey("categories.slug"), nullable=False
     )
     category = db.relationship("CategoryModel")
-
-    def __init__(self, name: str, category_slug: str, **kwargs):
-        super().__init__(**kwargs)
-        self.slug = slugify(name, max_length=20)
-        self.name = name
-        self.category_slug = category_slug
+    users = db.relationship("UserModel", secondary=user_jobs, lazy="dynamic", back_populates="jobs")
 
     def save_to_db(self) -> None:
         db.session.add(self)
