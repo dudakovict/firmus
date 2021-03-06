@@ -1,5 +1,5 @@
-.idea
 .vscode
+.idea
 .env
 *-secret*
 __pycache__
