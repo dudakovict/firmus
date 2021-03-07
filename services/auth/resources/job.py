@@ -4,6 +4,7 @@ from models import JobModel, CategoryModel
 from schemas import JobSchema
 from psycopg2.errors import ForeignKeyViolation
 from sqlalchemy.exc import IntegrityError
+
 from errors import (
     JobAlreadyExistsError,
     JobNotExistsError,

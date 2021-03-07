@@ -7,15 +7,8 @@ class JobTest(UnitTestCase):
     def setUp(self):
         super(JobTest, self).setUp()
         self.job_schema = JobSchema()
-        self.data_name = {
-            "name": "test",
-            "category_slug": "test"
-        }
-        self.data_slug = {
-            "name": "testing job slug",
-            "category_slug": "test"
-        }
-
+        self.data_name = {"name": "test", "category_slug": "test"}
+        self.data_slug = {"name": "testing job slug", "category_slug": "test"}
 
     def test_create_job(self):
         job = self.job_schema.load(self.data_name)

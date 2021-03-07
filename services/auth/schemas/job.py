@@ -3,6 +3,7 @@ from models import db, JobModel
 from marshmallow import post_load
 from slugify import slugify
 
+
 class JobSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = JobModel

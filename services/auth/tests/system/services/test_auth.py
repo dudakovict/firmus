@@ -1,8 +1,6 @@
 import json
-from models.user import UserModel
-from models.category import CategoryModel
-from models.job import JobModel
 from tests.system.system_base_test import SystemBaseTest
+from models import UserModel, CategoryModel, JobModel
 from errors import errors
 
 
@@ -65,7 +63,7 @@ class AuthTest(SystemBaseTest):
                 )
 
                 user = json.loads(resp.data)
-                
+
                 self.assertEqual(
                     resp.status_code, 201, f"Expected 201, but got {resp.status_code}."
                 )
@@ -81,7 +79,6 @@ class AuthTest(SystemBaseTest):
                     self.data.get("jobs"),
                     f"Expected {self.data.get('jobs')}, but got {user.get('jobs')}.",
                 )
-                
 
     def test_register_duplicate_user(self):
         with self.app() as client:
@@ -129,7 +126,7 @@ class AuthTest(SystemBaseTest):
                     json.loads(resp.data),
                     f"Expected {errors.get('UserEmailAlreadyExistsError')}, but got {json.loads(resp.data)}.",
                 )
- 
+
     def test_login_user_not_verified(self):
         with self.app() as client:
             with self.app_context():
@@ -214,7 +211,7 @@ class AuthTest(SystemBaseTest):
                     login_resp.get("tokens").get("access_token"),
                     f"Expected a JWT access token, but got {login_resp.get('tokens').get('access_token')}.",
                 )
-                
+
                 self.assertIsNotNone(
                     login_resp.get("tokens").get("refresh_token"),
                     f"Expected a JWT refresh token, but got {login_resp.get('tokens').get('refresh_token')}.",

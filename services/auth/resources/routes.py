@@ -9,7 +9,7 @@ from resources import (
     UserLogin,
     UserLogoutAccess,
     UserLogoutRefresh,
-    TokenRefresh
+    TokenRefresh,
 )
 
 

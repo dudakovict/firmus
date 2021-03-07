@@ -12,8 +12,8 @@ POSTRGES_PASSWORD = os.environ.get("POSTGRES_PASSWORD")
 DATABASE_URL = f"postgres://{POSTGRES_USER}:{POSTRGES_PASSWORD}@localhost:5432/firmus"
 
 
-class BaseConfig():
-    API_PREFIX = '/auth'
+class BaseConfig:
+    API_PREFIX = "/auth"
     TESTING = False
     DEBUG = False
     SECRET_KEY = os.environ.get("JWT_SECRET_KEY")
@@ -28,18 +28,18 @@ class BaseConfig():
 
 
 class DevelopmentConfig(BaseConfig):
-    FLASK_ENV = 'development'
+    FLASK_ENV = "development"
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = DATABASE_URL
 
 
 class ProductionConfig(BaseConfig):
-    FLASK_ENV = 'production'
+    FLASK_ENV = "production"
     SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True}
     SQLALCHEMY_DATABASE_URI = DATABASE_URL
 
 
 class TestConfig(BaseConfig):
-    FLASK_ENV = 'development'
+    FLASK_ENV = "development"
     TESTING = True
     SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_TEST_URL")

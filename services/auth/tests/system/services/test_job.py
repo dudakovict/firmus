@@ -1,7 +1,6 @@
 import json
-from models.job import JobModel
-from models.category import CategoryModel
 from tests.system.system_base_test import SystemBaseTest
+from models import JobModel, CategoryModel
 from errors import errors
 
 

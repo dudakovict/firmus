@@ -7,12 +7,8 @@ class CategoryTest(UnitTestCase):
     def setUp(self):
         super(CategoryTest, self).setUp()
         self.category_schema = CategorySchema()
-        self.data_name = {
-            "name": "test"
-        }
-        self.data_slug = {
-            "name": "testing category slug"
-        }
+        self.data_name = {"name": "test"}
+        self.data_slug = {"name": "testing category slug"}
 
     def test_create_category(self):
         category = self.category_schema.load(self.data_name)

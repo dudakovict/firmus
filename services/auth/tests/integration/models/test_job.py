@@ -5,13 +5,8 @@ from models import CategoryModel, JobModel
 class JobTest(IntegrationBaseTest):
     def setUp(self):
         super(JobTest, self).setUp()
-        self.category_data = {
-            "name": "test"
-        }
-        self.job_data = {
-            "name": "test",
-            "category_slug": "test"
-        }
+        self.category_data = {"name": "test"}
+        self.job_data = {"name": "test", "category_slug": "test"}
 
     def test_crud(self):
         with self.app_context():

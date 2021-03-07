@@ -4,6 +4,7 @@ from models import CategoryModel
 from schemas import CategorySchema
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
+
 from errors import (
     CategoryAlreadyExistsError,
     CategoryNotExistsError,

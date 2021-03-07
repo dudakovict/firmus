@@ -10,8 +10,8 @@ class Twilio:
 
     @classmethod
     def check_verification(cls, phone_number: str, code: str) -> bool:
-        verification_check = client.verify.services(
-            service
-        ).verification_checks.create(to=phone_number, code=code)
+        verification_check = client.verify.services(service).verification_checks.create(
+            to=phone_number, code=code
+        )
 
         return verification_check.status == "approved"

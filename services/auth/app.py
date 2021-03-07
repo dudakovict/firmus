@@ -6,6 +6,7 @@ from schemas import ma
 from resources import api
 from decorators import jwt, metrics
 
+
 def create_app():
     app = Flask(__name__)
     CORS(app)

@@ -16,25 +16,20 @@ class UserTest(IntegrationBaseTest):
             "password": "test",
             "languages": ["HR", "EN"],
             "availability": {
-            "mon": True,
-            "tue": False,
-            "wed": True,
-            "thu": False,
-            "fri": True,
-            "sat": False,
-            "sun": True,
+                "mon": True,
+                "tue": False,
+                "wed": True,
+                "thu": False,
+                "fri": True,
+                "sat": False,
+                "sun": True,
             },
-            "jobs": []
+            "jobs": [],
         }
 
-        self.category_data = {
-            "name": "test"
-        }
+        self.category_data = {"name": "test"}
 
-        self.job_data = {
-            "name": "test",
-            "category_slug": "test"
-        }
+        self.job_data = {"name": "test", "category_slug": "test"}
 
     def test_crud(self):
         with self.app_context():
@@ -61,7 +56,7 @@ class UserTest(IntegrationBaseTest):
     def test_user_job_relationship(self):
         with self.app_context():
             self.category_schema.load(self.category_data).save_to_db()
-        
+
             job = self.job_schema.load(self.job_data)
 
             job.save_to_db()
@@ -72,7 +67,9 @@ class UserTest(IntegrationBaseTest):
             user.save_to_db()
 
             self.assertEqual(
-                user.jobs.all()[0].name, job.name, f"Expected {job.name} but got {user.jobs.all()[0].name}."
+                user.jobs.all()[0].name,
+                job.name,
+                f"Expected {job.name} but got {user.jobs.all()[0].name}.",
             )
 
             self.assertEqual(

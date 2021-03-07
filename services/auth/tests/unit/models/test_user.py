@@ -6,16 +6,28 @@ from uuid import uuid4
 
 class UserTest(UnitTestCase):
     def setUp(self):
-        self.user = UserModel(id=uuid4().hex, first_name="test", last_name="test", phone_number="+3859999999", city="test", birth_date=date(2021, 2, 20), gender=Gender("male"),
-        email="test@gmail.com", password="test", verified=False, languages=["HR", "EN"], availability = {
-            "mon": True,
-            "tue": False,
-            "wed": True,
-            "thu": False,
-            "fri": True,
-            "sat": False,
-            "sun": True,
-        })
+        self.user = UserModel(
+            id=uuid4().hex,
+            first_name="test",
+            last_name="test",
+            phone_number="+3859999999",
+            city="test",
+            birth_date=date(2021, 2, 20),
+            gender=Gender("male"),
+            email="test@gmail.com",
+            password="test",
+            verified=False,
+            languages=["HR", "EN"],
+            availability={
+                "mon": True,
+                "tue": False,
+                "wed": True,
+                "thu": False,
+                "fri": True,
+                "sat": False,
+                "sun": True,
+            },
+        )
 
     def test_create_user(self):
         self.assertIsNotNone(
@@ -91,9 +103,11 @@ class UserTest(UnitTestCase):
             },
             f"Got {self.user.availability}, but expected something else.",
         )
-        
+
         self.assertListEqual(
-            self.user.jobs.all(), [], f"Expected an empty list, but got {self.user.jobs}."
+            self.user.jobs.all(),
+            [],
+            f"Expected an empty list, but got {self.user.jobs}.",
         )
 
     def test_user_password_hash(self):
@@ -112,6 +126,6 @@ class UserTest(UnitTestCase):
         )
 
         self.assertTrue(
-            UserModel.verify_hash(self.user.password, 'test'),
+            UserModel.verify_hash(self.user.password, "test"),
             f"Hash value of 'test' does not equal '{self.user.password}.",
         )
