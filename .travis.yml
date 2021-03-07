@@ -9,4 +9,6 @@ install:
  - "pip install pipenv"
  - "pipenv install pytest"
  - "pipenv install"
+before_script:
+ - psql -c "CREATE DATABASE firmus_test;" -U postgres
 script: python -m pytest tests/
