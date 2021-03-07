@@ -2,6 +2,8 @@ language: python
 python:
  - "3.9"
  - "nightly"
+services:
+ - postgresql
 install:
  - cd services/auth/
  - "pip install pipenv"

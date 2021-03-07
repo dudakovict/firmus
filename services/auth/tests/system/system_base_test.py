@@ -7,7 +7,6 @@ from models import db
 class SystemBaseTest(TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        print(app.config)
         with app.app_context():
             db.init_app(app)
 
