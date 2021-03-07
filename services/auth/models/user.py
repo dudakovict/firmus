@@ -3,8 +3,8 @@ from sqlalchemy.dialects.postgresql import UUID, ARRAY, JSON
 from uuid import uuid4
 from datetime import date
 from enum import Enum
-from libs.twilio import Twilio
-from typing import List, Dict
+from libs import Twilio
+from typing import List
 
 user_jobs = db.Table(
     "user_jobs",
