@@ -13,6 +13,7 @@ from sqlalchemy.exc import InvalidRequestError
 from sqlalchemy.orm.exc import NoResultFound
 from twilio.base.exceptions import TwilioRestException
 from marshmallow import ValidationError
+from phonenumbers.phonenumberutil import NumberParseException
 
 from schemas import (
     UserRegisterSchema,
@@ -54,8 +55,10 @@ class UserRegister(Resource):
             raise
         except (UserEmailAlreadyExistsError, UserPhoneAlreadyExistsError):
             raise
-        except TwilioRestException:
+        except (InvalidPhoneNumberError, NumberParseException):
             raise InvalidPhoneNumberError
+        except TwilioRestException:
+            raise
         except:
             raise InternalServerError
 
