@@ -8,7 +8,7 @@ class UserTest(IntegrationBaseTest):
         self.user_data = {
             "first_name": "test",
             "last_name": "test",
-            "phone_number": "+3859999999",
+            "phone_number": "+385999999999",
             "city": "test",
             "birth_date": "2021-02-20",
             "gender": "male",
